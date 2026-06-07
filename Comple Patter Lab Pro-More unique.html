@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complete Pattern Lab Pro</title>
+  <style>
+    :root {
+      --primary: #8a2be2;
+      --secondary: #00bfff;
+      --accent: #ff00ff;
+      --background: #0a0a1a;
+      --surface: rgba(26, 26, 46, 0.95);
+      --text: #ffffff;
+      --text-secondary: #a0a0c0;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overflow: hidden;
+      background: var(--background);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      height: 100%;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    .ui-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .ui-container > * {
+      pointer-events: auto;
+    }
+
+    .compact-header {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      padding: 6px 8px;
+      border: 1px solid rgba(138, 43, 226, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-height: 50px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .compact-header:hover {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      font-size: 14px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+    }
+
+    .control-group label {
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    select, input, button {
+      padding: 4px 6px;
+      font-size: 11px;
+      border-radius: 4px;
+      border: none;
+      background: rgba(30, 30, 50, 0.8);
+      color: var(--text);
+      border: 1px solid rgba(138, 43, 226, 0.3);
+      outline: none;
+      cursor: pointer;
+      min-width: 60px;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 28px;
+      height: 14px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(30, 30, 50, 0.8);
+      border: 1px solid rgba(138, 43, 226, 0.3);
+      transition: .2s;
+      border-radius: 14px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 10px;
+      width: 10px;
+      left: 2px;
+      bottom: 1px;
+      background: var(--text-secondary);
+      transition: .2s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(14px);
+      background: white;
+    }
+
+    .color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .color-dot.active {
+      border: 2px solid white;
+      box-shadow: 0 0 4px white;
+    }
+
+    .mini-stats {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(138, 43, 226, 0.3);
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .mini-stats span {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .mode-quick {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      max-width: 80%;
+    }
+
+    .mode-btn {
+      padding: 4px 8px;
+      font-size: 10px;
+      border-radius: 4px;
+      background: rgba(30, 30, 50, 0.8);
+      border: 1px solid rgba(138, 43, 226, 0.3);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .gradient-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(0, 191, 255, 0.1) 0%, transparent 50%);
+      z-index: 2;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="gradient-overlay"></div>
+  <canvas id="canvas"></canvas>
+  
+  <div class="ui-container">
+    <div class="compact-header">
+      <div class="logo">COMPLETE LAB PRO</div>
+      
+      <div class="control-group">
+        <label>Type:</label>
+        <select id="patternType">
+          <option value="original">Original Swarm</option>
+          <option value="marker">Rainbow Marker</option>
+          <option value="spiral">Hypnotic Spiral</option>
+          <option value="wave">Sinusoidal Grid</option>
+          <option value="neon">Neon Poly-Tracer</option>
+          <option value="particle">Kinetic Shrapnel</option>
+          <option value="fireworks">Fractured Burst</option>
+          <option value="laser">Refractive Rays</option>
+          <option value="magnetic">Lorentz Fields</option>
+          <option value="quantum">Probability Wave</option>
+          <option value="ferrofluid">Spiked Clusters</option>
+          <option value="lava">Metaball Updraft</option>
+          <option value="galaxy">Orbital Vortex</option>
+          <option value="aurora">Curving Ribbons</option>
+          <option value="ink">Fluid Osmosis</option>
+          <option value="smoke">Turbulent Plumes</option>
+          <option value="plasma">Attractor Matrix</option>
+          <option value="crystal">Crystalline Lattice</option>
+          <option value="lightning">Fulgurite Branches</option>
+          <option value="nebula">Volumetric Dust</option>
+          <option value="geometric">Symmetric Polyhedra</option>
+          <option value="organic">Mycelial Tendrils</option>
+          <option value="fractal">IFS Tree Paths</option>
+          <option value="hologram">Chromatic Glitch Scan</option>
+          <option value="cyberpunk">Orthogonal Pipelines</option>
+          <option value="neural">Synaptic Nodes</option>
+          <option value="DNA">Double Helix Strands</option>
+          <option value="soundwave">Harmonic Frequency Spectrums</option>
+          <option value="matrix">Digital Rain Cascades</option>
+          <option value="kaleidoscope">Reflected Mandalas</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Mode:</label>
+        <select id="modeSelect">
+          <option value="pattern">Pattern</option>
+          <option value="fluid">Fluid</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Shape:</label>
+        <select id="shapeSelect">
+          <option value="star">Star</option>
+          <option value="square">Square</option>
+          <option value="circle">Circle</option>
+          <option value="triangle">Triangle</option>
+          <option value="hexagon">Hexagon</option>
+          <option value="heart">Heart</option>
+          <option value="infinity">Infinity</option>
+          <option value="atom">Atom</option>
+          <option value="crystal">Crystal</option>
+          <option value="snowflake">Snowflake</option>
+          <option value="diamond">Diamond</option>
+          <option value="flower">Flower</option>
+          <option value="cross">Cross</option>
+          <option value="gear">Gear</option>
+          <option value="spiral">Spiral Shape</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Intensity:</label>
+        <input type="range" id="intensitySlider" min="1" max="10" value="5" style="width: 60px;">
+      </div>
+
+      <div class="control-group">
+        <label>Size:</label>
+        <input type="range" id="sizeSlider" min="1" max="20" value="10" style="width: 60px;">
+      </div>
+
+      <div class="control-group">
+        <label>Speed:</label>
+        <input type="range" id="speedSlider" min="1" max="10" value="5" style="width: 60px;">
+      </div>
+
+      <div class="control-group">
+        <label>Gravity:</label>
+        <input type="range" id="gravitySlider" min="0" max="20" value="5" style="width: 60px;">
+      </div>
+
+      <div class="control-group">
+        <label>Chaos:</label>
+        <input type="range" id="chaosSlider" min="0" max="10" value="3" style="width: 60px;">
+      </div>
+
+      <div class="control-group">
+        <label>Colors:</label>
+        <div style="display: flex; gap: 2px;">
+          <div class="color-dot active" style="background: #8a2be2" data-theme="purple"></div>
+          <div class="color-dot" style="background: #ff4444" data-theme="red"></div>
+          <div class="color-dot" style="background: #00ff00" data-theme="green"></div>
+          <div class="color-dot" style="background: #ffff00" data-theme="yellow"></div>
+          <div class="color-dot" style="background: #00ffff" data-theme="cyan"></div>
+          <div class="color-dot" style="background: #ff00ff" data-theme="magenta"></div>
+          <div class="color-dot" style="background: #ff6b35" data-theme="orange"></div>
+          <div class="color-dot" style="background: #ffffff" data-theme="white"></div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Quick Erase</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="quickEraseToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label>Auto Shoot</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="autoShootToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label>Gravity</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="gravityToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label>Magnetic</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="magneticToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label>Bloom</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="bloomToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label>3D Mode</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="threeDToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label>Mirror</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="mirrorToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label>Pulse</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="pulseToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label>Time Warp</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="timewarpToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="mini-stats">
+      FPS: <span id="fpsCounter">60</span> | 
+      Entities: <span id="particleCount">0</span> |
+      Mode: <span id="modeDisplay">PATTERN</span>
+    </div>
+
+    <div class="mode-quick">
+      <button class="mode-btn active" data-mode="pattern">PATTERN</button>
+      <button class="mode-btn" data-mode="fluid">FLUID</button>
+      <button class="mode-btn" data-mode="ferrofluid">FERRO</button>
+      <button class="mode-btn" data-mode="lava">LAVA</button>
+      <button class="mode-btn" data-mode="galaxy">GALAXY</button>
+      <button class="mode-btn" data-mode="aurora">AURORA</button>
+      <button class="mode-btn" data-mode="quantum">QUANTUM</button>
+      <button class="mode-btn" data-mode="cyberpunk">CYBER</button>
+      <button class="mode-btn" data-mode="lightning">LIGHTNING</button>
+      <button class="mode-btn" data-mode="matrix">MATRIX</button>
+      <button class="mode-btn" data-mode="kaleidoscope">KALEIDO</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // GLOBAL APP STATE
+    let mode = 'pattern';
+    let patternType = 'original';
+    let quickErase = false;
+    let autoShoot = false;
+    let gravityField = true;
+    let magneticMode = false;
+    let bloomEffect = false;
+    let threeDMode = false;
+    let mirrorMode = false;
+    let pulseMode = false;
+    let timewarpMode = false;
+    let intensity = 5;
+    let particleSize = 10;
+    let animationSpeed = 5;
+    let gravityStrength = 5;
+    let chaosLevel = 3;
+    let colorTheme = 'purple';
+    
+    let trails = [];
+    let particles = [];
+    let hue = 0;
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let fps = 60;
+    
+    let fluidBlob = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      vx: 0,
+      vy: 0,
+      targetX: canvas.width / 2,
+      targetY: canvas.height / 2
+    };
+
+    // UI REFERENCES
+    const patternTypeSelect = document.getElementById('patternType');
+    const modeSelect = document.getElementById('modeSelect');
+    const shapeSelect = document.getElementById('shapeSelect');
+    const intensitySlider = document.getElementById('intensitySlider');
+    const sizeSlider = document.getElementById('sizeSlider');
+    const speedSlider = document.getElementById('speedSlider');
+    const gravitySlider = document.getElementById('gravitySlider');
+    const chaosSlider = document.getElementById('chaosSlider');
+    const quickEraseToggle = document.getElementById('quickEraseToggle');
+    const autoShootToggle = document.getElementById('autoShootToggle');
+    const gravityToggle = document.getElementById('gravityToggle');
+    const magneticToggle = document.getElementById('magneticToggle');
+    const bloomToggle = document.getElementById('bloomToggle');
+    const threeDToggle = document.getElementById('threeDToggle');
+    const mirrorToggle = document.getElementById('mirrorToggle');
+    const pulseToggle = document.getElementById('pulseToggle');
+    const timewarpToggle = document.getElementById('timewarpToggle');
+    const fpsCounter = document.getElementById('fpsCounter');
+    const particleCount = document.getElementById('particleCount');
+    const modeDisplay = document.getElementById('modeDisplay');
+    const colorDots = document.querySelectorAll('.color-dot');
+    const modeButtons = document.querySelectorAll('.mode-btn');
+
+    // SETUP UI HANDLERS
+    patternTypeSelect.addEventListener('change', (e) => { patternType = e.target.value; updateModeDisplay(); });
+    modeSelect.addEventListener('change', (e) => { mode = e.target.value; updateModeDisplay(); });
+    intensitySlider.addEventListener('input', (e) => { intensity = parseInt(e.target.value); });
+    sizeSlider.addEventListener('input', (e) => { particleSize = parseInt(e.target.value); });
+    speedSlider.addEventListener('input', (e) => { animationSpeed = parseInt(e.target.value); });
+    gravitySlider.addEventListener('input', (e) => { gravityStrength = parseInt(e.target.value) / 10; });
+    chaosSlider.addEventListener('input', (e) => { chaosLevel = parseInt(e.target.value); });
+    quickEraseToggle.addEventListener('change', (e) => { quickErase = e.target.checked; });
+    
+    autoShootToggle.addEventListener('change', (e) => {
+      autoShoot = e.target.checked;
+      if (autoShoot) startAutoShooting();
+      else stopAutoShooting();
+    });
+
+    gravityToggle.addEventListener('change', (e) => { gravityField = e.target.checked; });
+    magneticToggle.addEventListener('change', (e) => { magneticMode = e.target.checked; });
+    bloomToggle.addEventListener('change', (e) => { bloomEffect = e.target.checked; });
+    threeDToggle.addEventListener('change', (e) => { threeDMode = e.target.checked; });
+    mirrorToggle.addEventListener('change', (e) => { mirrorMode = e.target.checked; });
+    pulseToggle.addEventListener('change', (e) => { pulseMode = e.target.checked; });
+    timewarpToggle.addEventListener('change', (e) => { timewarpMode = e.target.checked; });
+
+    colorDots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        colorDots.forEach(d => d.classList.remove('active'));
+        dot.classList.add('active');
+        colorTheme = dot.getAttribute('data-theme');
+      });
+    });
+
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const newMode = btn.getAttribute('data-mode');
+        
+        if (newMode === 'pattern' || newMode === 'fluid') {
+          mode = newMode;
+          modeSelect.value = mode;
+        } else {
+          mode = 'pattern';
+          modeSelect.value = 'pattern';
+          patternType = newMode;
+          patternTypeSelect.value = newMode;
+        }
+        updateModeDisplay();
+      });
+    });
+
+    function updateModeDisplay() {
+      modeDisplay.textContent = `${mode.toUpperCase()} - ${patternType.toUpperCase()}`;
+    }
+
+    // MAP THEME COLORS FOR COMPILING CUSTOM STYLES
+    function getThemeHue() {
+      switch(colorTheme) {
+        case 'red': return 0;
+        case 'green': return 120;
+        case 'yellow': return 60;
+        case 'cyan': return 180;
+        case 'magenta': return 300;
+        case 'orange': return 30;
+        case 'white': return 0;
+        default: return (Date.now() / 30) % 360;
+      }
+    }
+
+    function getThemeColor(alpha = 1, forceHue = null) {
+      let h = forceHue !== null ? forceHue : getThemeHue();
+      if (colorTheme === 'white' && forceHue === null) return `rgba(255, 255, 255, ${alpha})`;
+      return `hsla(${h}, 100%, 60%, ${alpha})`;
+    }
+
+    // INTERACTION ENGINE
+    let mouseX = canvas.width / 2;
+    let mouseY = canvas.height / 2;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      
+      if (mode === 'pattern') {
+        createPattern(mouseX, mouseY);
+        if (mirrorMode) {
+          createPattern(canvas.width - mouseX, mouseY);
+          createPattern(mouseX, canvas.height - mouseY);
+          createPattern(canvas.width - mouseX, canvas.height - mouseY);
+        }
+      } else {
+        fluidBlob.targetX = mouseX;
+        fluidBlob.targetY = mouseY;
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      createSpecialEffect(e.clientX, e.clientY);
+      if (mirrorMode) {
+        createSpecialEffect(canvas.width - e.clientX, e.clientY);
+        createSpecialEffect(e.clientX, canvas.height - e.clientY);
+        createSpecialEffect(canvas.width - e.clientX, canvas.height - e.clientY);
+      }
+    });
+
+    // PSEUDO 3D ATTRACTOR PROJECTION TRANSFORM
+    function project3D(x, y, zOffset, angle) {
+      if (!threeDMode) return { x, y };
+      let rad = angle || (Date.now() / 1500);
+      let cx = canvas.width / 2;
+      let cy = canvas.height / 2;
+      let dx = x - cx;
+      let dy = y - cy;
+      
+      let rotX = dx * Math.cos(rad) - zOffset * Math.sin(rad);
+      let rotZ = dx * Math.sin(rad) + zOffset * Math.cos(rad);
+      
+      let perspective = 600 / (600 + rotZ);
+      return {
+        x: cx + rotX * perspective,
+        y: cy + dy * perspective
+      };
+    }
+
+    // ARCHITECTURE FOR RADICALLY DIFFERENT GENERATORS
+    function createPattern(x, y) {
+      const chaosX = x + (Math.random() - 0.5) * chaosLevel * 12;
+      const chaosY = y + (Math.random() - 0.5) * chaosLevel * 12;
+      const tHue = getThemeHue();
+
+      switch(patternType) {
+        case 'original': // Swarm vectors
+          for (let i = 0; i < Math.max(1, intensity / 2); i++) {
+            trails.push({
+              x: chaosX, y: chaosY, ox: chaosX, oy: chaosY,
+              time: Date.now(), type: 'original',
+              vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4,
+              hue: tHue + Math.random() * 30
+            });
+          }
+          break;
+          
+        case 'marker': // Ink Ribbons
+          trails.push({
+            x: chaosX, y: chaosY, time: Date.now(), 
+            type: 'marker', color: getThemeColor(1), size: particleSize
+          });
+          break;
+          
+        case 'spiral': // Spiral Shell
+          const angle = Math.atan2(chaosY - canvas.height/2, chaosX - canvas.width/2);
+          const dist = Math.sqrt((chaosX - canvas.width/2)**2 + (chaosY - canvas.height/2)**2);
+          trails.push({
+            x: chaosX, y: chaosY, time: Date.now(), type: 'spiral',
+            angle: angle, distance: dist, baseHue: tHue
+          });
+          break;
+          
+        case 'wave': // Grid Wave Ripple
+          trails.push({
+            x: chaosX, y: chaosY, time: Date.now(), type: 'wave',
+            amplitude: intensity * 5, seed: Math.random() * 50, baseHue: tHue
+          });
+          break;
+          
+        case 'neon': // Polygon String
+          trails.push({
+            x: chaosX, y: chaosY, time: Date.now(), type: 'neon',
+            hue: tHue, points: Array.from({length: 4}, () => ({dx: (Math.random()-0.5)*40, dy: (Math.random()-0.5)*40}))
+          });
+          break;
+
+        default:
+          // Pipe directly to structured elements instead of simple generic explosions
+          createSpecialEffect(chaosX, chaosY);
+          break;
+      }
+    }
+
+    function createSpecialEffect(x, y) {
+      const count = intensity * 4;
+      const tHue = getThemeHue();
+      
+      switch(patternType) {
+        case 'particle': // Shrapnel Shards
+          for(let i=0; i<count; i++){
+            let a = Math.random() * Math.PI * 2;
+            particles.push({
+              x, y, type: 'particle', born: Date.now(), life: 1000,
+              vx: Math.cos(a) * (Math.random() * 6 + 2), vy: Math.sin(a) * (Math.random() * 6 + 2),
+              sides: Math.floor(Math.random() * 3) + 3, size: particleSize, hue: tHue
+            });
+          }
+          break;
+
+        case 'fireworks': // Cascading Strobe Sparks
+          for(let i=0; i<count * 2; i++){
+            let a = Math.random() * Math.PI * 2;
+            let spd = Math.random() * 8 + 3;
+            particles.push({
+              x, y, type: 'fireworks', born: Date.now(), life: 1500 + Math.random() * 1000,
+              vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, hue: Math.random() * 360,
+              sparkle: Math.random() > 0.5, size: Math.random() * 3 + 1
+            });
+          }
+          break;
+
+        case 'laser': // Angular Geometric Intercept Lines
+          for(let i=0; i<Math.max(2, intensity / 2); i++){
+            let a = Math.floor(Math.random() * 8) * (Math.PI / 4);
+            particles.push({
+              x, y, type: 'laser', born: Date.now(), life: 800,
+              length: Math.random() * 200 + 100, angle: a, hue: tHue, width: Math.random() * 4 + 1
+            });
+          }
+          break;
+
+        case 'magnetic': // Curved Orbit Field lines
+          for(let i=0; i<count; i++){
+            particles.push({
+              x, y, type: 'magnetic', born: Date.now(), life: 2500,
+              angle: Math.random() * Math.PI * 2, radius: Math.random() * 150 + 20,
+              rotSpeed: (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 0.04 + 0.01),
+              hue: tHue, z: (Math.random() - 0.5) * 100
+            });
+          }
+          break;
+
+        case 'quantum': // Shifting Probability Matrix
+          for(let i=0; i<count; i++){
+            particles.push({
+              x: x + (Math.random() - 0.5) * 60, y: y + (Math.random() - 0.5) * 60,
+              type: 'quantum', born: Date.now(), life: 1200, hue: tHue,
+              freq: Math.random() * 0.2 + 0.05, range: Math.random() * 20 + 5
+            });
+          }
+          break;
+
+        case 'ferrofluid': // Sharp Polar Spike Trees
+          for(let i=0; i<count; i++){
+            let a = Math.atan2(y - canvas.height / 2, x - canvas.width / 2) + (Math.random() - 0.5) * 0.6;
+            particles.push({
+              x, y, type: 'ferrofluid', born: Date.now(), life: 1400,
+              length: Math.random() * 60 + 20, angle: a, hue: tHue
+            });
+          }
+          break;
+
+        case 'lava': // Ascending Goo Elements
+          for(let i=0; i<Math.max(1, intensity/2); i++){
+            particles.push({
+              x: x + (Math.random() - 0.5) * 40, y: y, type: 'lava', born: Date.now(), life: 3000,
+              vy: -(Math.random() * 2 + 1), radius: Math.random() * particleSize + 10, hue: tHue
+            });
+          }
+          break;
+
+        case 'galaxy': // Planetary Accretion Disks
+          for(let i=0; i<count * 1.5; i++){
+            let d = Math.random() * 200 + 10;
+            let a = Math.random() * Math.PI * 2;
+            particles.push({
+              cx: x, cy: y, type: 'galaxy', born: Date.now(), life: 4000,
+              dist: d, angle: a, rotSpeed: (2 / (d + 10)) * (animationSpeed * 0.5),
+              hue: (tHue + d / 2) % 360
+            });
+          }
+          break;
+
+        case 'aurora': // Atmospheric Color Curtains
+          for(let i=0; i<Math.max(1, intensity/3); i++){
+            particles.push({
+              x, y: y + (Math.random() - 0.5) * 50, type: 'aurora', born: Date.now(), life: 5000,
+              nodes: Array.from({length: 8}, (_, idx) => ({x: x + idx * 40, y: y})), hue: (tHue + i * 20) % 360
+            });
+          }
+          break;
+
+        case 'ink': // Bleeding Radial Cell Osmosis
+          for(let i=0; i<Math.max(1, intensity/2); i++){
+            particles.push({
+              x, y, type: 'ink', born: Date.now(), life: 3000,
+              maxRadius: Math.random() * 40 + particleSize * 2, r: 2, hue: tHue
+            });
+          }
+          break;
+
+        case 'smoke': // Wisping Thermal Gas Plumes
+          for(let i=0; i<intensity; i++){
+            particles.push({
+              x, y, type: 'smoke', born: Date.now(), life: 4000,
+              vx: (Math.random() - 0.5) * 1.5, vy: -Math.random() * 2 - 1,
+              sz: Math.random() * 10 + 5, seed: Math.random() * 100, hue: tHue
+            });
+          }
+          break;
+
+        case 'plasma': // Lorenz Attractor Field Traces
+          for(let i=0; i<Math.max(1, intensity/2); i++){
+            particles.push({
+              x, y, type: 'plasma', born: Date.now(), life: 2000,
+              px: x, py: y, hue: tHue,
+              sigma: 10, rho: 28, beta: 8/3,
+              cx: 0.1, cy: 0.1, cz: 0.1
+            });
+          }
+          break;
+
+        case 'crystal': // Fracturing Branch Structures
+          for(let i=0; i<Math.max(2, intensity); i++){
+            let branchAngle = (i / intensity) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+            particles.push({
+              x, y, type: 'crystal', born: Date.now(), life: 5000,
+              angle: branchAngle, len: 0, maxLen: Math.random() * 80 + 30, hue: tHue
+            });
+          }
+          break;
+
+        case 'lightning': // Jagged Electric Discharge Path
+          for(let i=0; i<Math.max(1, intensity/3); i++){
+            let pts = [{x: x, y: y}];
+            let curX = x, curY = y;
+            let targetAngle = Math.random() * Math.PI * 2;
+            for(let j=0; j<12; j++){
+              curX += Math.cos(targetAngle) * 20 + (Math.random() - 0.5) * 30;
+              curY += Math.sin(targetAngle) * 20 + (Math.random() - 0.5) * 30;
+              pts.push({x: curX, y: curY});
+            }
+            particles.push({
+              type: 'lightning', born: Date.now(), life: 300, points: pts, hue: tHue
+            });
+          }
+          break;
+
+        case 'nebula': // Dust Gas Overlay Blocks
+          for(let i=0; i<Math.max(2, intensity); i++){
+            particles.push({
+              x: x + (Math.random() - 0.5) * 40, y: y + (Math.random() - 0.5) * 40,
+              type: 'nebula', born: Date.now(), life: 6000,
+              size: Math.random() * 60 + 40, hue: tHue
+            });
+          }
+          break;
+
+        case 'geometric': // Perfect Symmetrical Polyhedra
+          particles.push({
+            x, y, type: 'geometric', born: Date.now(), life: 3000,
+            radius: particleSize * 3, sides: Math.floor(Math.random() * 5) + 3,
+            rotSpeed: 0.02, rot: 0, hue: tHue
+          });
+          break;
+
+        case 'organic': // Crawling Plant Roots / Tendrils
+          for(let i=0; i<Math.max(2, intensity); i++){
+            particles.push({
+              x, y, type: 'organic', born: Date.now(), life: 4000,
+              angle: Math.random() * Math.PI * 2, path: [{x: x, y: y}], hue: tHue
+            });
+          }
+          break;
+
+        case 'fractal': // Iterated Tree Struct System
+          particles.push({
+            x, y, type: 'fractal', born: Date.now(), life: 4000,
+            depth: Math.min(6, Math.floor(intensity / 1.5) + 2), length: particleSize * 4, hue: tHue
+          });
+          break;
+
+        case 'hologram': // Digital Scan lines / Interference
+          particles.push({
+            x: 0, y: y, type: 'hologram', born: Date.now(), life: 1000,
+            w: canvas.width, h: Math.random() * 30 + 5, hue: tHue
+          });
+          break;
+
+        case 'cyberpunk': // Orthogonal Tech Network grids
+          for(let i=0; i<Math.max(2, intensity); i++){
+            let dirs = [{x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1}];
+            let d = dirs[Math.floor(Math.random() * dirs.length)];
+            particles.push({
+              x, y, type: 'cyberpunk', born: Date.now(), life: 3000,
+              vx: d.x * 3, vy: d.y * 3, path: [{x, y}], hue: tHue
+            });
+          }
+          break;
+
+        case 'neural': // Synapse Clusters / Graph Nodes
+          let nodeCount = Math.max(4, intensity * 2);
+          let nodes = Array.from({length: nodeCount}, () => ({
+            x: x + (Math.random() - 0.5) * 150,
+            y: y + (Math.random() - 0.5) * 150,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2
+          }));
+          particles.push({
+            type: 'neural', born: Date.now(), life: 3500, nodes: nodes, hue: tHue
+          });
+          break;
+
+        case 'DNA': // Twisted Gene Helix Strands
+          particles.push({
+            x, y, type: 'DNA', born: Date.now(), life: 4000,
+            length: Math.random() * 200 + 100, angle: Math.random() * Math.PI * 2, hue: tHue
+          });
+          break;
+
+        case 'soundwave': // Equalizer Spectrum Bars
+          particles.push({
+            x, y, type: 'soundwave', born: Date.now(), life: 2000,
+            width: intensity * 25, hue: tHue
+          });
+          break;
+
+        case 'matrix': // Code Column Cascade Drops
+          for(let i=0; i<Math.max(2, intensity); i++){
+            particles.push({
+              x: x + (Math.random() - 0.5) * 120, y: y - (Math.random() * 50),
+              type: 'matrix', born: Date.now(), life: 2500,
+              speed: Math.random() * 4 + 2, chars: Array.from({length: 10}, () => String.fromCharCode(0x30A0 + Math.random() * 96)),
+              hue: colorTheme === 'purple' ? 120 : tHue // Default classic matrix green if theme purple
+            });
+          }
+          break;
+
+        case 'kaleidoscope': // Symmetrical Mandala Reflection Rings
+          particles.push({
+            x, y, type: 'kaleidoscope', born: Date.now(), life: 3000,
+            maxRadius: intensity * 15, hue: tHue
+          });
+          break;
+      }
+    }
+
+    // AUTOMATED SCRIPT EMITTER
+    let shootingInterval;
+    function startAutoShooting() {
+      shootingInterval = setInterval(() => {
+        createSpecialEffect(Math.random() * canvas.width, Math.random() * canvas.height);
+      }, 1000 / intensity);
+    }
+    function stopAutoShooting() { if (shootingInterval) clearInterval(shootingInterval); }
+
+    // RENDER AND SIMULATE UNIQUELY DESIGNED SYSTEMS
+    function updateParticles() {
+      const now = Date.now();
+      const timeFactor = timewarpMode ? 0.3 : 1.0;
+      const physicsStep = animationSpeed * 0.2 * timeFactor;
+      
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        const age = now - p.born;
+        
+        if (age > p.life) {
+          particles.splice(i, 1);
+          continue;
+        }
+        
+        const pct = age / p.life;
+        const alpha = 1 - pct;
+        
+        if (bloomEffect) {
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.lineWidth = 2;
+
+        // CUSTOM LOGIC BLOCKS
+        switch(p.type) {
+          case 'particle': // Custom Polygon Shards
+            p.x += p.vx * physicsStep;
+            p.y += p.vy * physicsStep;
+            if(gravityField) p.y += gravityStrength * physicsStep;
+            
+            ctx.fillStyle = getThemeColor(alpha, p.hue);
+            ctx.beginPath();
+            let projP = project3D(p.x, p.y, pct * 80);
+            for(let s=0; s<=p.sides; s++){
+              let a = (s / p.sides) * Math.PI * 2 + (age * 0.005);
+              let sx = projP.x + Math.cos(a) * p.size * alpha;
+              let sy = projP.y + Math.sin(a) * p.size * alpha;
+              if (s === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+            }
+            ctx.closePath();
+            ctx.fill();
+            break;
+
+          case 'fireworks': // Kinetic Sparkler Cascades
+            p.x += p.vx * physicsStep;
+            p.y += p.vy * physicsStep;
+            if(gravityField) p.y += (gravityStrength * 1.5) * physicsStep;
+            
+            if (p.sparkle && Math.random() > 0.4) ctx.fillStyle = '#ffffff';
+            else ctx.fillStyle = getThemeColor(alpha, p.hue);
+            
+            ctx.beginPath();
+            let projF = project3D(p.x, p.y, 0);
+            ctx.arc(projF.x, projF.y, p.size * (pulseMode ? (1 + Math.sin(age*0.05)*0.5) : 1), 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+          case 'laser': // Vector Line Rays
+            ctx.strokeStyle = getThemeColor(alpha, p.hue);
+            ctx.lineWidth = p.width;
+            ctx.beginPath();
+            let lProjStart = project3D(p.x, p.y, 0);
+            let lProjEnd = project3D(p.x + Math.cos(p.angle) * p.length * pct, p.y + Math.sin(p.angle) * p.length * pct, 0);
+            ctx.moveTo(lProjStart.x, lProjStart.y);
+            ctx.lineTo(lProjEnd.x, lProjEnd.y);
+            ctx.stroke();
+            break;
+
+          case 'magnetic': // Field Orbit Loops
+            p.angle += p.rotSpeed * physicsStep;
+            let mX = mouseX + Math.cos(p.angle) * p.radius;
+            let mY = mouseY + Math.sin(p.angle) * p.radius;
+            let projM = project3D(mX, mY, p.z);
+            
+            ctx.fillStyle = getThemeColor(alpha, p.hue);
+            ctx.beginPath();
+            ctx.arc(projM.x, projM.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+          case 'quantum': // Sinewave Probability Fields
+            let qAngle = (age * p.freq);
+            let qX = p.x + Math.sin(qAngle) * p.range;
+            let qY = p.y + Math.cos(qAngle) * p.range;
+            ctx.fillStyle = getThemeColor(alpha * (0.3 + Math.random() * 0.7), p.hue);
+            ctx.beginPath();
+            ctx.arc(qX, qY, 2 + Math.random() * 4, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+          case 'ferrofluid': // Spiked Needles
+            ctx.strokeStyle = getThemeColor(alpha, p.hue);
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            let fStart = project3D(p.x, p.y, 0);
+            let fEnd = project3D(p.x + Math.cos(p.angle) * p.length * alpha, p.y + Math.sin(p.angle) * p.length * alpha, 0);
+            ctx.moveTo(fStart.x, fStart.y);
+            ctx.lineTo(fEnd.x, fEnd.y);
+            ctx.stroke();
+            break;
+
+          case 'lava': // Fluidic Metaball System
+            p.y += p.vy * physicsStep;
+            ctx.fillStyle = getThemeColor(alpha, p.hue);
+            ctx.beginPath();
+            let lV = project3D(p.x, p.y, 0);
+            ctx.arc(lV.x, lV.y, p.radius * (1 + Math.sin(age*0.002)*0.2), 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+          case 'galaxy': // Vortical Disk Shells
+            p.angle += p.rotSpeed * physicsStep;
+            let gX = p.cx + Math.cos(p.angle) * p.dist;
+            let gY = p.cy + Math.sin(p.angle) * p.dist;
+            let gProj = project3D(gX, gY, pct * -50);
+            ctx.fillStyle = getThemeColor(alpha, p.hue);
+            ctx.beginPath();
+            ctx.arc(gProj.x, gProj.y, Math.max(1, 4 * alpha), 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+          case 'aurora': // Curving Gaseous Ribbons
+            ctx.strokeStyle = getThemeColor(alpha * 0.25, p.hue);
+            ctx.lineWidth = 15;
+            ctx.beginPath();
+            p.nodes.forEach((node, nIdx) => {
+              node.y += Math.sin(age * 0.002 + nIdx) * 0.5;
+              let projNode = project3D(node.x, node.y + (Math.sin(Date.now()/500 + nIdx)*20), 0);
+              if(nIdx === 0) ctx.moveTo(projNode.x, projNode.y);
+              else ctx.lineTo(projNode.x, projNode.y);
+            });
+            ctx.stroke();
+            break;
+
+          case 'ink': // Osmotic Bleed Rings
+            p.r += (p.maxRadius - p.r) * 0.03 * physicsStep;
+            ctx.fillStyle = getThemeColor(alpha * 0.15, p.hue);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+          case 'smoke': // Soft Gaseous Billows
+            p.x += p.vx * physicsStep + Math.sin(age * 0.01 + p.seed) * 0.5;
+            p.y += p.vy * physicsStep;
+            p.sz += 0.4 * physicsStep;
+            ctx.fillStyle = getThemeColor(alpha * 0.1, p.hue);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.sz, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+          case 'plasma': // Strange Attractor Simulation
+            let dt = 0.005 * physicsStep;
+            let dx = (p.sigma * (p.cy - p.cx)) * dt;
+            let dy = (p.cx * (p.rho - p.cz) - p.cy) * dt;
+            let dz = (p.cx * p.cy - p.beta * p.cz) * dt;
+            p.cx += dx; p.cy += dy; p.cz += dz;
+            
+            p.x += (p.cx * 10 - (p.x - mouseX)) * 0.05;
+            p.y += (p.cy * 10 - (p.y - mouseY)) * 0.05;
+            
+            ctx.strokeStyle = getThemeColor(alpha, p.hue);
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(p.px, p.py);
+            ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+            p.px = p.x; p.py = p.y;
+            break;
+
+          case 'crystal': // Rigid Growth Lattice Lines
+            if(p.len < p.maxLen) p.len += 2 * physicsStep;
+            ctx.strokeStyle = getThemeColor(alpha, p.hue);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x + Math.cos(p.angle) * p.len, p.y + Math.sin(p.angle) * p.len);
+            ctx.stroke();
+            break;
+
+          case 'lightning': // Lightning Bolt Branches
+            ctx.strokeStyle = getThemeColor(alpha, 180 + Math.random()*40);
+            ctx.lineWidth = Math.random() * 3 + 1;
+            ctx.beginPath();
+            p.points.forEach((pt, idx) => {
+              if (idx === 0) ctx.moveTo(pt.x, pt.y);
+              else ctx.lineTo(pt.x + (Math.random()-0.5)*4, pt.y + (Math.random()-0.5)*4);
+            });
+            ctx.stroke();
+            break;
+
+          case 'nebula': // Volumetric Star Clouds
+            ctx.fillStyle = getThemeColor(alpha * 0.06, p.hue);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * (1 + pct), 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+          case 'geometric': // Rotating 3D Prisms
+            p.rot += p.rotSpeed * physicsStep;
+            ctx.strokeStyle = getThemeColor(alpha, p.hue);
+            ctx.beginPath();
+            for(let s=0; s<=p.sides; s++){
+              let a = (s / p.sides) * Math.PI * 2 + p.rot;
+              let projG = project3D(p.x + Math.cos(a)*p.radius, p.y + Math.sin(a)*p.radius, Math.sin(p.rot)*40);
+              if(s===0) ctx.moveTo(projG.x, projG.y); else ctx.lineTo(projG.x, projG.y);
+            }
+            ctx.stroke();
+            break;
+
+          case 'organic': // Branching Root Systems
+            let lastNode = p.path[p.path.length - 1];
+            if(p.path.length < 50 && Math.random() > 0.3) {
+              p.angle += (Math.random() - 0.5) * 0.5;
+              let nX = lastNode.x + Math.cos(p.angle) * 4 * physicsStep;
+              let nY = lastNode.y + Math.sin(p.angle) * 4 * physicsStep;
+              p.path.push({x: nX, y: nY});
+            }
+            ctx.strokeStyle = getThemeColor(alpha, p.hue);
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            p.path.forEach((pt, idx) => {
+              if(idx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.stroke();
+            break;
+
+          case 'fractal': // High-Density Recursive Trees
+            ctx.strokeStyle = getThemeColor(alpha * 0.8, p.hue);
+            const drawTree = (tx, ty, length, angle, depth) => {
+              if (depth === 0) return;
+              let x2 = tx + Math.cos(angle) * length;
+              let y2 = ty + Math.sin(angle) * length;
+              ctx.beginPath();
+              ctx.moveTo(tx, ty);
+              ctx.lineTo(x2, y2);
+              ctx.stroke();
+              drawTree(x2, y2, length * 0.75, angle - 0.35, depth - 1);
+              drawTree(x2, y2, length * 0.75, angle + 0.35, depth - 1);
+            };
+            drawTree(p.x, p.y, p.length, -Math.PI / 2, p.depth);
+            break;
+
+          case 'hologram': // Digital Scan Grids
+            ctx.fillStyle = getThemeColor(alpha * 0.2, p.hue);
+            if(Math.random() > 0.8) ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.fillRect(p.x, p.y + (Math.random()-0.5)*10, p.w, p.h);
+            break;
+
+          case 'cyberpunk': // Structural Orthogonal Grids
+            let cLast = p.path[p.path.length - 1];
+            if(Math.random() > 0.92) {
+              let isHoriz = Math.random() > 0.5;
+              p.vx = isHoriz ? (Math.random() > 0.5 ? 3 : -3) : 0;
+              p.vy = !isHoriz ? (Math.random() > 0.5 ? 3 : -3) : 0;
+            }
+            let cX = cLast.x + p.vx * physicsStep;
+            let cY = cLast.y + p.vy * physicsStep;
+            if(p.path.length < 60) p.path.push({x: cX, y: cY});
+            
+            ctx.strokeStyle = getThemeColor(alpha, p.hue);
+            ctx.beginPath();
+            p.path.forEach((pt, idx) => {
+              if(idx===0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.stroke();
+            break;
+
+          case 'neural': // Synaptic Neural Graph Nets
+            ctx.fillStyle = getThemeColor(alpha, p.hue);
+            ctx.strokeStyle = getThemeColor(alpha * 0.25, p.hue);
+            p.nodes.forEach((n) => {
+              n.x += n.vx * physicsStep; n.y += n.vy * physicsStep;
+              ctx.beginPath();
+              ctx.arc(n.x, n.y, 3, 0, Math.PI * 2);
+              ctx.fill();
+            });
+            // Connect proximal vertices
+            for(let j=0; j<p.nodes.length; j++){
+              for(let k=j+1; k<p.nodes.length; k++){
+                let d = Math.hypot(p.nodes[j].x - p.nodes[k].x, p.nodes[j].y - p.nodes[k].y);
+                if(d < 70) {
+                  ctx.beginPath();
+                  ctx.moveTo(p.nodes[j].x, p.nodes[j].y);
+                  ctx.lineTo(p.nodes[k].x, p.nodes[k].y);
+                  ctx.stroke();
+                }
+              }
+            }
+            break;
+
+          case 'DNA': // Twisted Double Helix Rings
+            ctx.fillStyle = getThemeColor(alpha, p.hue);
+            let hStep = 200;
+            for(let j=0; j<p.length; j+=8){
+              let rads = (j * 0.05) + (age * 0.004 * physicsStep);
+              let offset = Math.sin(rads) * 25;
+              let p1 = project3D(p.x + Math.cos(p.angle)*j + Math.cos(p.angle+Math.PI/2)*offset, p.y + Math.sin(p.angle)*j + Math.sin(p.angle+Math.PI/2)*offset, 0);
+              let p2 = project3D(p.x + Math.cos(p.angle)*j - Math.cos(p.angle+Math.PI/2)*offset, p.y + Math.sin(p.angle)*j - Math.sin(p.angle+Math.PI/2)*offset, 0);
+              ctx.beginPath(); ctx.arc(p1.x, p1.y, 2, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(p2.x, p2.y, 2, 0, Math.PI*2); ctx.fill();
+              if(j % 24 === 0) {
+                ctx.strokeStyle = getThemeColor(alpha * 0.3, p.hue);
+                ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+              }
+            }
+            break;
+
+          case 'soundwave': // Parametric Frequency Spikes
+            ctx.fillStyle = getThemeColor(alpha, p.hue);
+            let bars = 15;
+            let bW = p.width / bars;
+            for(let j=0; j<bars; j++){
+              let h = Math.sin(age*0.01 + j) * 40 * (1-pct);
+              ctx.fillRect(p.x - p.width/2 + j*bW, p.y - h/2, bW - 2, h);
+            }
+            break;
+
+          case 'matrix': // Falling Digital Rainfall Streams
+            ctx.fillStyle = getThemeColor(alpha, p.hue);
+            ctx.font = `${particleSize + 2}px monospace`;
+            p.y += p.speed * physicsStep;
+            p.chars.forEach((ch, idx) => {
+              ctx.fillStyle = getThemeColor(alpha * (1 - idx/10), p.hue);
+              ctx.fillText(ch, p.x, p.y - (idx * (particleSize + 2)));
+            });
+            break;
+
+          case 'kaleidoscope': // Mandala Mirrors
+            ctx.strokeStyle = getThemeColor(alpha * 0.5, p.hue);
+            ctx.lineWidth = 1.5;
+            let cR = p.maxRadius * pct;
+            ctx.beginPath();
+            for(let rIdx=0; rIdx<8; rIdx++){
+              let a = (rIdx / 8) * Math.PI * 2;
+              ctx.lineTo(p.x + Math.cos(a)*cR, p.y + Math.sin(a)*cR);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            break;
+        }
+      }
+      ctx.shadowBlur = 0; // Clear bloom leakage
+    }
+
+    // LINE TRAIL SIMULATORS
+    function drawPattern() {
+      if (quickErase) {
+        ctx.fillStyle = 'rgba(10, 10, 26, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      const now = Date.now();
+      const timeFactor = timewarpMode ? 0.3 : 1;
+      const step = animationSpeed * 0.2 * timeFactor;
+      
+      for (let i = trails.length - 1; i >= 0; i--) {
+        const t = trails[i];
+        const age = now - t.time;
+        
+        if (age > 3000) {
+          trails.splice(i, 1);
+          continue;
+        }
+        
+        const alpha = 1 - (age / 3000);
+        
+        switch(t.type) {
+          case 'original': // Vector Intercept Swarms
+            t.vx += (Math.random() - 0.5) * chaosLevel * 0.2;
+            t.vy += (Math.random() - 0.5) * chaosLevel * 0.2;
+            t.x += t.vx * step;
+            t.y += t.vy * step;
+            ctx.strokeStyle = getThemeColor(alpha, t.hue);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(t.ox, t.oy);
+            ctx.lineTo(t.x, t.y);
+            ctx.stroke();
+            t.ox = t.x; t.oy = t.y;
+            break;
+            
+          case 'marker': // Solid Ribbons
+            ctx.fillStyle = t.color;
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, t.size * (pulseMode ? (1 + Math.sin(age*0.01)*0.3) : 1), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            break;
+            
+          case 'spiral': // Concentric Mathematical Shells
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            let curAngle = t.angle + (age * 0.001 * step);
+            let curDist = t.distance + Math.sin(age * 0.005) * 20;
+            let sP = project3D(Math.cos(curAngle)*curDist, Math.sin(curAngle)*curDist, 0);
+            ctx.fillStyle = getThemeColor(alpha, t.baseHue + age * 0.1);
+            ctx.beginPath();
+            ctx.arc(sP.x, sP.y, particleSize/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            break;
+            
+          case 'wave': // Field Ripples
+            ctx.strokeStyle = getThemeColor(alpha, t.baseHue);
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            for (let dX = -40; dX <= 40; dX += 4) {
+              let dY = Math.sin(dX * 0.1 + age * 0.005 * step + t.seed) * t.amplitude;
+              let projW = project3D(t.x + dX, t.y + dY, 0);
+              if (dX === -40) ctx.moveTo(projW.x, projW.y); else ctx.lineTo(projW.x, projW.y);
+            }
+            ctx.stroke();
+            break;
+            
+          case 'neon': // Modular String Tracer Poly
+            ctx.strokeStyle = getThemeColor(alpha, t.hue);
+            ctx.beginPath();
+            t.points.forEach((pt, pIdx) => {
+              let nX = t.x + pt.dx + Math.sin(age * 0.002 + pIdx)*10;
+              let nY = t.y + pt.dy + Math.cos(age * 0.002 + pIdx)*10;
+              if (pIdx === 0) ctx.moveTo(nX, nY); else ctx.lineTo(nX, nY);
+            });
+            ctx.closePath();
+            ctx.stroke();
+            break;
+        }
+      }
+      
+      updateParticles();
+    }
+
+    // SYSTEM INTEGRITY FLUID METABALL OVERLAY
+    function drawFluid() {
+      if (quickErase) {
+        ctx.fillStyle = 'rgba(10, 10, 26, 0.2)';
+      } else {
+        ctx.fillStyle = 'rgba(10, 10, 26, 0.08)';
+      }
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      fluidBlob.vx += (fluidBlob.targetX - fluidBlob.x) * 0.1;
+      fluidBlob.vy += (fluidBlob.targetY - fluidBlob.y) * 0.1;
+      fluidBlob.vx *= 0.8; fluidBlob.vy *= 0.8;
+      fluidBlob.x += fluidBlob.vx; fluidBlob.y += fluidBlob.vy;
+
+      const shape = shapeSelect.value;
+      const count = 32;
+
+      for (let i = 0; i < count; i++) {
+        const a = (i / count) * Math.PI * 2;
+        const radiusFactor = 80 + Math.sin(Date.now() / 150 + i) * 25;
+        const dx = Math.cos(a) * radiusFactor;
+        const dy = Math.sin(a) * radiusFactor;
+        
+        ctx.fillStyle = getThemeColor(0.8);
+
+        ctx.save();
+        ctx.translate(fluidBlob.x + dx, fluidBlob.y + dy);
+        ctx.rotate(Date.now() / 800 + i);
+        drawShape(shape);
+        ctx.restore();
+      }
+    }
+
+    function drawShape(type) {
+      const size = particleSize;
+      const baseSz = pulseMode ? size * (0.8 + Math.sin(Date.now()/150) * 0.3) : size;
+      ctx.beginPath();
+      
+      switch (type) {
+        case 'circle': 
+          ctx.arc(0, 0, baseSz/2, 0, Math.PI * 2); 
+          break;
+        case 'square': 
+          ctx.rect(-baseSz/2, -baseSz/2, baseSz, baseSz); 
+          break;
+        case 'triangle':
+          ctx.moveTo(0, -baseSz/2); ctx.lineTo(baseSz/2, baseSz/2); ctx.lineTo(-baseSz/2, baseSz/2);
+          ctx.closePath();
+          break;
+        case 'hexagon':
+          for (let i = 0; i < 6; i++) {
+            const angle = (i * 2 * Math.PI) / 6;
+            ctx.lineTo(Math.cos(angle) * baseSz/2, Math.sin(angle) * baseSz/2);
+          }
+          ctx.closePath();
+          break;
+        case 'heart':
+          ctx.moveTo(0, baseSz/4);
+          ctx.bezierCurveTo(baseSz/2, -baseSz/2, baseSz, baseSz/2, 0, baseSz);
+          ctx.bezierCurveTo(-baseSz, baseSz/2, -baseSz/2, -baseSz/2, 0, baseSz/4);
+          break;
+        case 'infinity':
+          ctx.moveTo(-baseSz/2, 0);
+          ctx.bezierCurveTo(-baseSz/2, -baseSz/2, 0, -baseSz/2, 0, 0);
+          ctx.bezierCurveTo(0, baseSz/2, baseSz/2, baseSz/2, baseSz/2, 0);
+          ctx.bezierCurveTo(baseSz/2, -baseSz/2, 0, -baseSz/2, 0, 0);
+          ctx.bezierCurveTo(0, baseSz/2, -baseSz/2, baseSz/2, -baseSz/2, 0);
+          break;
+        case 'atom':
+          ctx.arc(0, 0, baseSz/3, 0, Math.PI * 2);
+          ctx.moveTo(-baseSz/2, 0); ctx.lineTo(baseSz/2, 0);
+          ctx.moveTo(0, -baseSz/2); ctx.lineTo(0, baseSz/2);
+          break;
+        case 'crystal':
+          for (let i = 0; i < 8; i++) {
+            const angle = (i * 2 * Math.PI) / 8;
+            const r = i % 2 === 0 ? baseSz/2 : baseSz/3;
+            ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+          }
+          ctx.closePath();
+          break;
+        case 'snowflake':
+          for (let i = 0; i < 6; i++) {
+            const angle = (i * 2 * Math.PI) / 6;
+            ctx.moveTo(0, 0); ctx.lineTo(Math.cos(angle) * baseSz/2, Math.sin(angle) * baseSz/2);
+          }
+          break;
+        case 'diamond':
+          ctx.moveTo(0, -baseSz/2); ctx.lineTo(baseSz/2, 0); ctx.lineTo(0, baseSz/2); ctx.lineTo(-baseSz/2, 0);
+          ctx.closePath();
+          break;
+        case 'flower':
+          for (let i = 0; i < 8; i++) {
+            const angle = (i * 2 * Math.PI) / 8;
+            ctx.lineTo(Math.cos(angle) * baseSz/2, Math.sin(angle) * baseSz/2);
+            const pAngle = angle + Math.PI/8;
+            ctx.lineTo(Math.cos(pAngle) * baseSz/4, Math.sin(pAngle) * baseSz/4);
+          }
+          ctx.closePath();
+          break;
+        case 'cross':
+          ctx.rect(-baseSz/6, -baseSz/2, baseSz/3, baseSz); ctx.rect(-baseSz/2, -baseSz/6, baseSz, baseSz/6);
+          break;
+        case 'gear':
+          for (let i = 0; i < 12; i++) {
+            const angle = (i * 2 * Math.PI) / 12;
+            const radius = i % 2 === 0 ? baseSz/2 : baseSz/3;
+            ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+          }
+          ctx.closePath();
+          break;
+        case 'spiral':
+          for (let i = 0; i < 60; i++) {
+            const angle = (i * 2 * Math.PI) / 20;
+            const radius = (baseSz/2) * (i / 60);
+            ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+          }
+          break;
+        default: // Star
+          for (let i = 0; i < 10; i++) {
+            const angle = (i * Math.PI) / 5;
+            const radius = i % 2 === 0 ? baseSz/2 : baseSz/4;
+            ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+          }
+          ctx.closePath();
+          break;
+      }
+      ctx.fill();
+    }
+
+    // LOGIC TICK LOOP
+    function updateFPS() {
+      frameCount++;
+      const currentTime = performance.now();
+      if (currentTime - lastTime >= 1000) {
+        fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+        fpsCounter.textContent = fps;
+        particleCount.textContent = particles.length + trails.length;
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+    }
+
+    function draw() {
+      if (mode === 'pattern') drawPattern(); 
+      else drawFluid();
+      
+      updateFPS();
+      requestAnimationFrame(draw);
+    }
+
+    // BOOTSTRAP INITIALIZATION
+    draw();
+    updateModeDisplay();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
